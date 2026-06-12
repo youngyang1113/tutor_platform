@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.real_name }} - 老师详情{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- 左侧：教师信息卡 -->
+        <div class="col-lg-4 mb-4">
+            <div class="yb-card-static">
+                <div class="card-body text-center p-4">
+                    <div class="teacher-avatar-large mx-auto mb-3">
+                        <i class="bi bi-person-fill" style="font-size:3.5rem"></i>
+                    </div>
+                    <h3 class="mb-1">{{ profile.real_name }}</h3>
+                    <!-- 认证标签 -->
+                    <div class="d-flex flex-wrap justify-content-center gap-1 mb-2">
+                        {% if profile.is_platform_certified %}
+                        <span class="badge-cert"><i class="bi bi-patch-check-fill"></i> 平台认证</span>
+                        {% endif %}
+                        {% if profile.is_verified %}
+                        <span class="badge-cert"><i class="bi bi-shield-check"></i> 资质已验</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-muted mb-2"><i class="bi bi-mortarboard"></i> {{ profile.education or '暂无学历信息' }}</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
+                        {% for subject in profile.get_subjects_list() %}
+                        <span class="badge-subject">{{ subject }}</span>
+                        {% endfor %}
+                    </div>
+                    <hr>
+                    <div class="text-start">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-cash-stack me-2" style="color:var(--yb-success)"></i>
+                            <span class="text-muted">时薪：</span><strong class="ms-auto" style="color:var(--yb-primary)">{{ profile.hourly_rate }}元/h</strong>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-geo-alt me-2" style="color:var(--yb-primary)"></i>
+                            <span class="text-muted">地区：</span><strong class="ms-auto">{{ profile.location or '未知' }}</strong>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-briefcase me-2" style="color:var(--yb-secondary)"></i>
+                            <span class="text-muted">教龄：</span><strong class="ms-auto">{{ profile.experience or 0 }}年</strong>
+                        </div>
+                        {% if profile.gender %}
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person me-2" style="color:var(--yb-primary)"></i>
+                            <span class="text-muted">性别：</span><strong class="ms-auto">{{ profile.gender }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 证书展示 -->
+            {% if profile.certificates.count() > 0 %}
+            <div class="yb-card-static mt-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3"><i class="bi bi-award text-warning"></i> 资质证书</h6>
+                    {% for cert in profile.certificates.all() %}
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2" style="background:#f8fafc;border-radius:8px;">
+                        <i class="bi bi-patch-check-fill text-success"></i>
+                        <div>
+                            <div class="fw-bold small">{{ cert.cert_name }}</div>
+                            <small class="text-muted">{{ cert.cert_type }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 右侧：详情 -->
+        <div class="col-lg-8">
+            <!-- 自我介绍 -->
+            <div class="yb-card-static mb-4">
+                <div class="card-header-primary">
+                    <h5 class="mb-0"><i class="bi bi-file-person"></i> 自我介绍</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="mb-0" style="line-height:1.9">{{ profile.introduction or '该老师暂无自我介绍' }}</p>
+                </div>
+            </div>
+
+            <!-- 教学特色 -->
+            {% if profile.teaching_style %}
+            <div class="yb-card-static mb-4">
+                <div class="card-header-success">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> 教学特色</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="mb-0" style="line-height:1.9">{{ profile.teaching_style }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 教学成果 -->
+            {% if profile.achievements %}
+            <div class="yb-card-static mb-4">
+                <div class="card-header-secondary">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> 教学成果</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="mb-0" style="line-height:1.9">{{ profile.achievements }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 教育背景 -->
+            {% if profile.school or profile.major %}
+            <div class="yb-card-static mb-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3"><i class="bi bi-mortarboard text-primary"></i> 教育背景</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        {% if profile.school %}
+                        <span class="fw-bold">{{ profile.school }}</span>
+                        {% endif %}
+                        {% if profile.major %}
+                        <span class="text-muted">{{ profile.major }}</span>
+                        {% endif %}
+                        {% if profile.education %}
+                        <span class="badge bg-light text-dark">{{ profile.education }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

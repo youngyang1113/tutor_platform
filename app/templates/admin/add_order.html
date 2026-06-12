@@ -1,0 +1,128 @@
+{% extends "admin/base.html" %}
+{% block title %}{% if editing %}编辑需求 #{{ order.id }}{% else %}新增需求{% endif %}{% endblock %}
+{% block page_title %}
+{% if editing %}<i class="bi bi-pencil-square text-warning"></i> 编辑需求 #{{ order.id }}
+{% else %}<i class="bi bi-plus-circle text-success"></i> 新增需求{% endif %}
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0">{% if editing %}修改需求信息{% else %}为家长代发需求{% endif %}</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    {% if not editing %}
+                    <!-- 选择家长 -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">选择家长 <span class="text-danger">*</span></label>
+                        <select name="parent_id" class="form-select" required>
+                            <option value="">-- 请选择家长 --</option>
+                            {% for p in parents %}
+                            <option value="{{ p.id }}">{{ p.username }} ({{ p.email }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">只有注册为家长的用户才会出现在列表中</div>
+                    </div>
+                    <hr>
+                    {% endif %}
+
+                    <!-- 基本信息 -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-info-circle"></i> 基本信息</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.subject.label.text }}</label>
+                            {{ form.subject(class="form-select") }}
+                            {% for e in form.subject.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.grade.label.text }}</label>
+                            {{ form.grade(class="form-select") }}
+                            {% for e in form.grade.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.budget.label.text }}</label>
+                            <div class="input-group">
+                                {{ form.budget(class="form-control", placeholder="150") }}
+                                <span class="input-group-text">元/h</span>
+                            </div>
+                            {% for e in form.budget.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.description.label.text }}</label>
+                        {{ form.description(class="form-control", rows=4, placeholder="请详细描述学生情况、学习目标、对老师的要求等...") }}
+                        {% for e in form.description.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+
+                    <!-- 时间地点 -->
+                    <h6 class="mb-3 mt-4 text-primary"><i class="bi bi-geo-alt"></i> 时间地点</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.location.label.text }}</label>
+                            {{ form.location(class="form-control", placeholder="海淀区中关村") }}
+                            {% for e in form.location.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ form.city.label.text }}</label>
+                            {{ form.city(class="form-control", placeholder="北京") }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">{{ form.form_type.label.text }}</label>
+                            {{ form.form_type(class="form-select") }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.schedule.label.text }}</label>
+                            {{ form.schedule(class="form-control", placeholder="周末上午") }}
+                            {% for e in form.schedule.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.duration.label.text }}</label>
+                            <div class="input-group">
+                                {{ form.duration(class="form-control", value=2) }}
+                                <span class="input-group-text">小时</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.frequency.label.text }}</label>
+                            {{ form.frequency(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <!-- 偏好设置 -->
+                    <h6 class="mb-3 mt-4 text-primary"><i class="bi bi-sliders"></i> 偏好设置</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.gender_pref.label.text }}</label>
+                            {{ form.gender_pref(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.teacher_type.label.text }}</label>
+                            {{ form.teacher_type(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.contact_phone.label.text }}</label>
+                            {{ form.contact_phone(class="form-control", placeholder="13800138000") }}
+                            {% for e in form.contact_phone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('manage.orders') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回列表</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-lg"></i> {% if editing %}保存修改{% else %}创建需求{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

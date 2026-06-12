@@ -1,0 +1,187 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>管理后台概览</h2>
+    
+    <!-- 统计卡片 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>总用户数</h6>
+                            <h3>{{ stats.total_users }}</h3>
+                        </div>
+                        <i class="bi bi-people display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>注册老师</h6>
+                            <h3>{{ stats.total_teachers }}</h3>
+                        </div>
+                        <i class="bi bi-mortarboard display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>注册学生</h6>
+                            <h3>{{ stats.total_students }}</h3>
+                        </div>
+                        <i class="bi bi-person display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>待审核老师</h6>
+                            <h3>{{ stats.pending_teachers }}</h3>
+                        </div>
+                        <i class="bi bi-hourglass display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>总订单数</h6>
+                            <h3>{{ stats.total_orders }}</h3>
+                        </div>
+                        <i class="bi bi-clipboard-list display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>待接单需求</h6>
+                            <h3>{{ stats.open_orders }}</h3>
+                        </div>
+                        <i class="bi bi-inbox display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6>已完成订单</h6>
+                            <h3>{{ stats.completed_orders }}</h3>
+                        </div>
+                        <i class="bi bi-check-circle display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 待审核老师 -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-hourglass me-2"></i>待审核老师
+                    {% if pending_teachers %}
+                        <span class="badge bg-danger ms-2">{{ pending_teachers|length }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if pending_teachers %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>姓名</th>
+                                        <th>性别</th>
+                                        <th>学历</th>
+                                        <th>教龄</th>
+                                        <th>注册时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for teacher in pending_teachers %}
+                                        <tr>
+                                            <td>{{ teacher.id }}</td>
+                                            <td>{{ teacher.real_name }}</td>
+                                            <td>{{ teacher.gender }}</td>
+                                            <td>{{ teacher.education }}</td>
+                                            <td>{{ teacher.teaching_experience }}年</td>
+                                            <td>{{ teacher.user.created_at.strftime('%Y-%m-%d') if teacher.user else '-' }}</td>
+                                            <td>
+                                                <a href="{{ url_for('teacherprofile.edit_view', id=teacher.id) }}" class="btn btn-sm btn-primary">
+                                                    审核
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-check-circle display-1 text-success"></i>
+                            <p class="text-muted mt-3">没有待审核的老师</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <i class="bi bi-clock-history me-2"></i>最近注册的老师
+                </div>
+                <div class="card-body">
+                    {% if recent_teachers %}
+                        {% for teacher in recent_teachers %}
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2 {% if loop.last %}border-0 mb-0 pb-0{% endif %}">
+                                <div>
+                                    <p class="mb-0 fw-bold">{{ teacher.real_name }}</p>
+                                    <small class="text-muted">{{ teacher.education }} · {{ teacher.teaching_experience }}年教龄</small>
+                                </div>
+                                {% if teacher.is_verified %}
+                                    <span class="badge bg-success">已认证</span>
+                                {% else %}
+                                    <span class="badge bg-warning">待审核</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">暂无注册老师</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

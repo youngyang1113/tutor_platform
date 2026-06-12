@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}老师注册 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="text-center mb-4">
+                <h2>老师注册</h2>
+                <div class="section-divider"></div>
+                <p class="text-muted">30秒快速注册，注册后完善资料即可接单</p>
+            </div>
+            <div class="yb-card-static">
+                <div class="card-header-primary">
+                    <h5 class="mb-0"><i class="bi bi-person-workspace"></i> 快速注册</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control", placeholder="请输入用户名（3-20个字符）") }}
+                            {% for e in form.username.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control", placeholder="请输入邮箱") }}
+                            {% for e in form.email.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.real_name.label(class="form-label") }}
+                            {{ form.real_name(class="form-control", placeholder="请输入真实姓名") }}
+                            {% for e in form.real_name.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control", placeholder="请输入11位手机号") }}
+                            {% for e in form.phone.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control", placeholder="请设置密码（至少6位）") }}
+                            {% for e in form.password.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.password2.label(class="form-label") }}
+                            {{ form.password2(class="form-control", placeholder="请再次输入密码") }}
+                            {% for e in form.password2.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-yb-primary btn-lg") }}
+                        </div>
+                    </form>
+                    
+                    <div class="alert alert-info mt-4 mb-0" role="alert">
+                        <i class="bi bi-info-circle"></i> <strong>温馨提示：</strong>注册成功后请尽快完善个人资料和上传证书，资料越完整越容易获得家长信任。
+                    </div>
+                    
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <p class="mb-0 text-muted">已有账号？<a href="{{ url_for('auth.login') }}" style="color:var(--yb-primary)">立即登录</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

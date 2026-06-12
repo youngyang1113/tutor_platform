@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+{% block title %}家教大厅 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <!-- 订单池顶部工具栏 -->
+    <div class="order-pool-top mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-3">
+                <!-- 城市选择器 -->
+                <div class="city-selector">
+                    <button type="button" class="city-btn" onclick="toggleCityDropdown()">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span id="currentCity">{{ city or '全部城市' }}</span>
+                        <i class="bi bi-chevron-down small"></i>
+                    </button>
+                    <div id="cityDropdown" class="city-dropdown">
+                        <a href="{{ url_for('main.orders', subject=subject, grade=grade, form=form_type, time=time_type, gender=gender_pref, teacher_type=teacher_type, sort=sort) }}" 
+                           class="city-item {% if not city %}active{% endif %}">全部城市</a>
+                        {% for c in cities %}
+                        <a href="{{ url_for('main.orders', city=c, subject=subject, grade=grade, form=form_type, time=time_type, gender=gender_pref, teacher_type=teacher_type, sort=sort) }}" 
+                           class="city-item {% if city == c %}active{% endif %}">{{ c }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <h4 class="mb-0 fw-bold">{% if matched %}智能匹配{% else %}订单池{% endif %}</h4>
+            </div>
+            <div class="d-flex gap-2">
+                {% if matched %}
+                <a href="{{ url_for('main.orders') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-list-ul"></i> 全部订单
+                </a>
+                {% else %}
+                <button type="button" class="btn btn-match" onclick="openMatchSheet()">
+                    <i class="bi bi-magic"></i> 智能匹配
+                </button>
+                {% endif %}
+                <a href="{{ url_for('main.orders', refresh=1, city=city) }}" class="btn btn-refresh">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新
+                </a>
+            </div>
+        </div>
+        
+        {% if not matched %}
+        <!-- 条件筛选入口 -->
+        <button type="button" class="filter-entry-btn" onclick="openFilterSheet()">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-search"></i>
+                    <span class="fw-bold">条件筛选</span>
+                </div>
+                <small class="text-muted">年级 / 科目 / 形式 / 时间 / 老师要求</small>
+            </div>
+            <i class="bi bi-chevron-down"></i>
+        </button>
+        {% else %}
+        <!-- 智能匹配说明 -->
+        <div class="match-info-banner">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-info-circle-fill"></i>
+                <strong>智能匹配已开启</strong>
+            </div>
+            <p class="mb-1 small">根据以下条件筛选：</p>
+            <div class="d-flex flex-wrap gap-1 mt-2">
+                {% if filter_info.subjects %}
+                <span class="match-tag">科目: {{ filter_info.subjects|join(', ') }}</span>
+                {% endif %}
+                {% if filter_info.location %}
+                <span class="match-tag">地区: {{ filter_info.location }}</span>
+                {% endif %}
+                <span class="match-tag">教龄: {{ filter_info.experience }}年</span>
+                <span class="match-tag">类型: {{ '专职' if filter_info.is_full_time else '在读学生' }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 智能匹配弹窗遮罩 -->
+    <div id="matchMask" class="filter-mask" onclick="closeMatchSheet()"></div>
+    
+    <!-- 智能匹配弹窗 -->
+    <div id="matchSheet" class="filter-sheet">
+        <div class="filter-sheet-header">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-magic"></i> 智能匹配</h5>
+            <button type="button" class="btn btn-sm" onclick="closeMatchSheet()">收起</button>
+        </div>
+        
+        <form method="GET" action="{{ url_for('main.matched_orders') }}" id="matchForm">
+            <div class="match-form-section">
+                <label class="match-label">擅长科目（可多选）</label>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for s in ['数学','语文','英语','物理','化学','生物','历史','地理','政治','全科'] %}
+                    <label class="match-check-item">
+                        <input type="checkbox" name="subjects" value="{{ s }}" class="match-checkbox">
+                        <span>{{ s }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="match-form-section">
+                <label class="match-label">所在地区</label>
+                <input type="text" name="location" class="form-control mb-3" placeholder="如：海淀区、朝阳区" id="matchLocation">
+            </div>
+            
+            <div class="match-form-section">
+                <label class="match-label">教龄（年）</label>
+                <input type="number" name="experience" class="form-control mb-3" value="3" min="0" max="50" id="matchExperience">
+                <small class="text-muted">教龄≥3年匹配"专职"订单，＜3年匹配"在读学生"订单</small>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="button" class="btn btn-clear" onclick="clearMatchForm()">清空</button>
+                <button type="submit" class="btn btn-confirm">开始匹配</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 筛选底部弹出页遮罩 -->
+    <div id="filterMask" class="filter-mask" onclick="closeFilterSheet()"></div>
+    
+    <!-- 筛选底部弹出页 -->
+    <div id="filterSheet" class="filter-sheet">
+        <div class="filter-sheet-header">
+            <h5 class="mb-0 fw-bold">条件筛选</h5>
+            <button type="button" class="btn btn-sm" onclick="closeFilterSheet()">收起</button>
+        </div>
+        
+        <form method="GET" id="filterForm">
+            <input type="hidden" name="sort" id="filter_sort" value="{{ sort or 'latest' }}">
+            <input type="hidden" name="grade" id="filter_grade" value="{{ grade }}">
+            <input type="hidden" name="subject" id="filter_subject" value="{{ subject }}">
+            <input type="hidden" name="form" id="filter_form" value="{{ form_type }}">
+            <input type="hidden" name="time" id="filter_time" value="{{ time_type }}">
+            <input type="hidden" name="gender" id="filter_gender" value="{{ gender_pref }}">
+            <input type="hidden" name="teacher_type" id="filter_teacher_type" value="{{ teacher_type }}">
+            
+            <!-- 排序 -->
+            <div class="filter-section">
+                <div class="filter-section-title">排序</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if sort == 'latest' or not sort %}active{% endif %}" 
+                          data-key="sort" data-value="latest" onclick="selectFilter(this)">最新发布</span>
+                </div>
+            </div>
+            
+            <!-- 年级 -->
+            <div class="filter-section">
+                <div class="filter-section-title">年级</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if not grade %}active{% endif %}" 
+                          data-key="grade" data-value="" onclick="selectFilter(this)">全部</span>
+                    {% for g in ['小学','初中','高中','其他'] %}
+                    <span class="filter-tag {% if grade == g %}active{% endif %}" 
+                          data-key="grade" data-value="{{ g }}" onclick="selectFilter(this)">{{ g }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 科目 -->
+            <div class="filter-section">
+                <div class="filter-section-title">科目</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if not subject %}active{% endif %}" 
+                          data-key="subject" data-value="" onclick="selectFilter(this)">全部</span>
+                    {% for s in ['语文','数学','英语','物理','化学','生物','历史','地理','政治','全科','体育','音乐','绘画','编程','其他'] %}
+                    <span class="filter-tag {% if subject == s %}active{% endif %}" 
+                          data-key="subject" data-value="{{ s }}" onclick="selectFilter(this)">{{ s }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 形式 -->
+            <div class="filter-section">
+                <div class="filter-section-title">形式</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if not form_type %}active{% endif %}" 
+                          data-key="form" data-value="" onclick="selectFilter(this)">全部</span>
+                    {% for f in ['上门','网课'] %}
+                    <span class="filter-tag {% if form_type == f %}active{% endif %}" 
+                          data-key="form" data-value="{{ f }}" onclick="selectFilter(this)">{{ f }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 时间 -->
+            <div class="filter-section">
+                <div class="filter-section-title">时间</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if not time_type %}active{% endif %}" 
+                          data-key="time" data-value="" onclick="selectFilter(this)">全部</span>
+                    {% for t in ['周内','周末','短期'] %}
+                    <span class="filter-tag {% if time_type == t %}active{% endif %}" 
+                          data-key="time" data-value="{{ t }}" onclick="selectFilter(this)">{{ t }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 老师性别 -->
+            <div class="filter-section">
+                <div class="filter-section-title">老师性别</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if not gender_pref %}active{% endif %}" 
+                          data-key="gender" data-value="" onclick="selectFilter(this)">全部</span>
+                    {% for g in ['男老师','女老师','男老师优先','女老师优先','男女不限'] %}
+                    <span class="filter-tag {% if gender_pref == g %}active{% endif %}" 
+                          data-key="gender" data-value="{{ g }}" onclick="selectFilter(this)">{{ g }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 老师类型 -->
+            <div class="filter-section">
+                <div class="filter-section-title">老师类型</div>
+                <div class="filter-tags">
+                    <span class="filter-tag {% if not teacher_type %}active{% endif %}" 
+                          data-key="teacher_type" data-value="" onclick="selectFilter(this)">全部</span>
+                    {% for t in ['在读学生','专职'] %}
+                    <span class="filter-tag {% if teacher_type == t %}active{% endif %}" 
+                          data-key="teacher_type" data-value="{{ t }}" onclick="selectFilter(this)">{{ t }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="filter-actions">
+                <button type="button" class="btn btn-clear" onclick="clearFilters()">清空筛选</button>
+                <button type="submit" class="btn btn-confirm">确定筛选</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 订单统计 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">共 {{ orders.total }} 条订单</span>
+    </div>
+
+    <!-- 订单卡片列表 -->
+    {% for order in orders.items %}
+    <div class="order-card">
+        <!-- 第一行：标签 + 预算 -->
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-wrap gap-1">
+                <span class="tag-badge">{{ order.form_type or '上门' }}</span>
+                <span class="tag-badge">{{ order.gender_pref or '不限' }}</span>
+                {% if order.teacher_type and order.teacher_type != '不限' %}
+                <span class="tag-badge">{{ order.teacher_type }}</span>
+                {% endif %}
+            </div>
+            <div class="price-tag">{{ order.budget }}<small>元/时</small></div>
+        </div>
+        
+        <!-- 第二行：年级科目 + 频次时长 -->
+        <div class="mt-2 d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-bold" style="font-size:15px;">{{ order.grade }} {{ order.subject }}</span>
+            <span class="badge-time">{{ order.frequency or '1次/周' }}</span>
+            <span class="badge-time">{{ order.duration }}h/次</span>
+        </div>
+        
+        <!-- 第三行：地址 -->
+        <div class="mt-2">
+            <span class="location-text">
+                <i class="bi bi-geo-alt-fill"></i> {{ order.location }}
+            </span>
+        </div>
+        
+        <!-- 第四行：描述 -->
+        <div class="mt-2">
+            <p class="text-muted small mb-0 order-desc">{{ order.description[:80] }}{% if order.description|length > 80 %}...{% endif %}</p>
+        </div>
+        
+        <!-- 第五行：统计 + 按钮 -->
+        <div class="mt-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">
+                <i class="bi bi-people"></i> {{ order.applications_count() }}人投递
+                <span class="ms-2"><i class="bi bi-clock"></i> {{ order.created_at.strftime('%m-%d') }}</span>
+            </span>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('main.order_detail', id=order.id) }}" class="btn btn-detail">详情</a>
+                {% if current_user.is_authenticated and current_user.is_tutor() %}
+                <a href="{{ url_for('main.apply_order', id=order.id) }}" class="btn btn-apply">投递</a>
+                {% elif not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-apply">登录投递</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-inbox display-1" style="color:#d0d5dd"></i>
+        <p class="text-muted mt-3">暂无家教需求</p>
+        {% if subject or grade or form_type or time_type or gender_pref or teacher_type %}
+        <a href="{{ url_for('main.orders') }}" class="btn btn-yb-outline btn-sm mt-2">清除筛选</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <!-- 分页 -->
+    {% if orders.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if orders.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.orders', page=orders.prev_num, subject=subject, grade=grade, form=form_type, time=time_type, gender=gender_pref, teacher_type=teacher_type, sort=sort) }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            {% for page_num in orders.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == orders.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('main.orders', page=page_num, subject=subject, grade=grade, form=form_type, time=time_type, gender=gender_pref, teacher_type=teacher_type, sort=sort) }}">{{ page_num }}</a>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if orders.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.orders', page=orders.next_num, subject=subject, grade=grade, form=form_type, time=time_type, gender=gender_pref, teacher_type=teacher_type, sort=sort) }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 打开筛选弹窗
+function openFilterSheet() {
+    document.getElementById('filterMask').style.display = 'block';
+    document.getElementById('filterSheet').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// 关闭筛选弹窗
+function closeFilterSheet() {
+    document.getElementById('filterMask').style.display = 'none';
+    document.getElementById('filterSheet').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// 选择筛选条件
+function selectFilter(el) {
+    var key = el.getAttribute('data-key');
+    var value = el.getAttribute('data-value');
+    
+    // 更新隐藏输入
+    var input = document.getElementById('filter_' + key);
+    if (input) input.value = value;
+    
+    // 更新标签样式
+    var siblings = el.parentElement.querySelectorAll('.filter-tag');
+    siblings.forEach(function(tag) {
+        tag.classList.remove('active');
+    });
+    el.classList.add('active');
+}
+
+// 清空筛选
+function clearFilters() {
+    var keys = ['grade', 'subject', 'form', 'time', 'gender', 'teacher_type'];
+    keys.forEach(function(key) {
+        var input = document.getElementById('filter_' + key);
+        if (input) input.value = '';
+        
+        // 重置标签样式
+        var tags = document.querySelectorAll('[data-key="' + key + '"]');
+        tags.forEach(function(tag) {
+            tag.classList.remove('active');
+            if (tag.getAttribute('data-value') === '') {
+                tag.classList.add('active');
+            }
+        });
+    });
+}
+
+// 城市下拉菜单
+function toggleCityDropdown() {
+    var dropdown = document.getElementById('cityDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// 点击外部关闭城市下拉菜单
+document.addEventListener('click', function(e) {
+    var citySelector = document.querySelector('.city-selector');
+    var dropdown = document.getElementById('cityDropdown');
+    if (citySelector && !citySelector.contains(e.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// 智能匹配弹窗
+function openMatchSheet() {
+    document.getElementById('matchMask').style.display = 'block';
+    document.getElementById('matchSheet').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMatchSheet() {
+    document.getElementById('matchMask').style.display = 'none';
+    document.getElementById('matchSheet').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// 清空匹配表单
+function clearMatchForm() {
+    var checkboxes = document.querySelectorAll('.match-checkbox');
+    checkboxes.forEach(function(cb) {
+        cb.checked = false;
+    });
+    document.getElementById('matchLocation').value = '';
+    document.getElementById('matchExperience').value = '3';
+}
+</script>
+{% endblock %}

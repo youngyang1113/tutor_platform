@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}我的简历 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center">
+                    <a href="{{ url_for('main.mine') }}" class="btn btn-outline-secondary btn-sm me-3">
+                        <i class="bi bi-arrow-left"></i> 返回
+                    </a>
+                    <h4 class="mb-0 fw-bold">我的简历</h4>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('main.mine_edit') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil"></i> 编辑
+                    </a>
+                    <button class="btn btn-primary btn-sm" onclick="window.print()">
+                        <i class="bi bi-printer"></i> 打印
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 简历卡片 -->
+            <div class="resume-card">
+                <!-- 简历头部 -->
+                <div class="resume-header">
+                    <div class="resume-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="resume-basic">
+                        <h3 class="mb-1">{{ resume_data.name }}</h3>
+                        <div class="resume-tags">
+                            {% if resume_data.gender %}<span class="resume-tag">{{ resume_data.gender }}</span>{% endif %}
+                            {% if resume_data.education %}<span class="resume-tag">{{ resume_data.education }}</span>{% endif %}
+                            {% if resume_data.experience %}<span class="resume-tag">{{ resume_data.experience }}年教龄</span>{% endif %}
+                            {% if resume_data.location %}<span class="resume-tag"><i class="bi bi-geo-alt"></i> {{ resume_data.location }}</span>{% endif %}
+                        </div>
+                    </div>
+                    {% if resume_data.hourly_rate %}
+                    <div class="resume-rate">
+                        <div class="rate-number">{{ resume_data.hourly_rate }}</div>
+                        <div class="rate-unit">元/时</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 擅长科目 -->
+                {% if resume_data.subjects %}
+                <div class="resume-section">
+                    <h5 class="resume-section-title"><i class="bi bi-book"></i> 擅长科目</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for subject in resume_data.subjects %}
+                        <span class="resume-subject-tag">{{ subject }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- 自我介绍 -->
+                {% if resume_data.introduction %}
+                <div class="resume-section">
+                    <h5 class="resume-section-title"><i class="bi bi-chat-quote"></i> 自我介绍</h5>
+                    <p class="resume-text">{{ resume_data.introduction }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- 教学特色 -->
+                {% if resume_data.teaching_style %}
+                <div class="resume-section">
+                    <h5 class="resume-section-title"><i class="bi bi-lightbulb"></i> 教学特色</h5>
+                    <p class="resume-text">{{ resume_data.teaching_style }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- 教学成果 -->
+                {% if resume_data.achievements %}
+                <div class="resume-section">
+                    <h5 class="resume-section-title"><i class="bi bi-trophy"></i> 教学成果</h5>
+                    <p class="resume-text">{{ resume_data.achievements }}</p>
+                </div>
+                {% endif %}
+                
+                <!-- 教育背景 -->
+                {% if resume_data.school or resume_data.major %}
+                <div class="resume-section">
+                    <h5 class="resume-section-title"><i class="bi bi-mortarboard"></i> 教育背景</h5>
+                    <div class="resume-edu-item">
+                        {% if resume_data.school %}<strong>{{ resume_data.school }}</strong>{% endif %}
+                        {% if resume_data.major %}<span class="text-muted ms-2">{{ resume_data.major }}</span>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- 资质证书 -->
+                {% if certificates %}
+                <div class="resume-section">
+                    <h5 class="resume-section-title"><i class="bi bi-award"></i> 资质证书</h5>
+                    <div class="row">
+                        {% for cert in certificates %}
+                        <div class="col-md-6 mb-3">
+                            <div class="resume-cert-card">
+                                <div class="cert-icon">
+                                    <i class="bi bi-patch-check-fill text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ cert.cert_name }}</div>
+                                    <small class="text-muted">{{ cert.cert_type }}</small>
+                                </div>
+                                <span class="badge {% if cert.status == 'approved' %}bg-success{% elif cert.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %} ms-auto">
+                                    {{ '已认证' if cert.status == 'approved' else '审核中' if cert.status == 'pending' else '未通过' }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- 联系方式 -->
+                <div class="resume-section resume-contact">
+                    <div class="text-center">
+                        <i class="bi bi-telephone-fill text-primary me-2"></i>
+                        <span>联系方式仅对已匹配的家长可见</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

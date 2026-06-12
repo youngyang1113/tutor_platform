@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- ══════════ Hero：温和明亮渐变 ══════════ -->
+<section class="hero-section">
+    <div class="container position-relative" style="z-index:1">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="mb-4">找到最适合您的<br>家教老师</h1>
+                <p class="lead mb-4">连接优质教师与求知家庭，让每一次学习都更有价值。<br>专业认证、透明报价、高效匹配。</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <button type="button" class="btn btn-yb-secondary btn-lg px-4" data-bs-toggle="modal" data-bs-target="#contactModal">
+                        <i class="bi bi-chat-dots"></i> 我是家长（找老师）
+                    </button>
+                    <a href="{{ url_for('auth.register_tutor') }}" class="btn btn-yb-primary btn-lg px-4">
+                        <i class="bi bi-person-workspace"></i> 我是老师
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center d-none d-lg-block">
+                <i class="bi bi-mortarboard-fill" style="font-size:12rem;opacity:.08;color:var(--yb-primary)"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ 数据背书：深色高对比度 ══════════ -->
+<section class="stats-dark-section">
+    <div class="container position-relative" style="z-index:1">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-4 mb-md-0">
+                <div class="stat-icon-dark"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-number-dark">500+</div>
+                <div class="stat-label-dark">认证教师</div>
+            </div>
+            <div class="col-md-3 col-6 mb-4 mb-md-0">
+                <div class="stat-icon-dark"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-number-dark">2000+</div>
+                <div class="stat-label-dark">成功匹配</div>
+            </div>
+            <div class="col-md-3 col-6 mb-4 mb-md-0">
+                <div class="stat-icon-dark"><i class="bi bi-star-fill"></i></div>
+                <div class="stat-number-dark">98%</div>
+                <div class="stat-label-dark">好评率</div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-icon-dark"><i class="bi bi-shield-check"></i></div>
+                <div class="stat-number-dark">100%</div>
+                <div class="stat-label-dark">实名认证</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ 最新需求 ══════════ -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>最新家教需求</h2>
+            <div class="section-divider"></div>
+            <p class="text-muted">家长发布的最新需求，等你来抢单</p>
+        </div>
+        <div class="row">
+            {% for order in orders %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="yb-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge-subject">{{ order.subject }}</span>
+                            <span class="badge" style="background:rgba(255,154,86,.12);color:var(--yb-secondary)">{{ order.grade }}</span>
+                        </div>
+                        <h5 class="mb-2">{{ order.location }}</h5>
+                        <p class="text-muted small mb-3">{{ order.description[:60] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color:var(--yb-primary);font-size:1.1rem">{{ order.budget }}<small>元/h</small></span>
+                            <span class="text-muted small"><i class="bi bi-clock"></i> {{ order.duration }}h/次</span>
+                        </div>
+                    </div>
+                    <div class="price-footer">
+                        <a href="{{ url_for('main.order_detail', id=order.id) }}" class="btn btn-yb-primary w-100 btn-sm">
+                            查看详情 <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-inbox display-1" style="color:#d0d5dd"></i>
+                <p class="text-muted mt-3">暂无家教需求</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('main.orders') }}" class="btn btn-yb-outline px-4">查看全部需求 <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ 推荐教师 ══════════ -->
+<section class="py-5" style="background:#f0f4f8">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>推荐教师</h2>
+            <div class="section-divider"></div>
+            <p class="text-muted">经过严格审核的优质师资</p>
+        </div>
+        <div class="row">
+            {% for profile in teachers %}
+            <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                <div class="yb-card h-100">
+                    <div class="card-body text-center pt-4">
+                        <div class="teacher-avatar mx-auto mb-3">
+                            <i class="bi bi-person-fill" style="font-size:2rem"></i>
+                        </div>
+                        <h5 class="mb-1">{{ profile.real_name or profile.user.username }}</h5>
+                        <p class="text-muted small mb-2">{{ profile.education or '暂无学历信息' }}</p>
+                        <div class="mb-3">
+                            {% for subject in profile.get_subjects_list()[:3] %}
+                            <span class="badge-subject">{{ subject }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="price-footer d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" style="color:var(--yb-primary)">{{ profile.hourly_rate }}<small>元/h</small></span>
+                        <a href="{{ url_for('main.teacher_detail', id=profile.id) }}" class="btn btn-yb-outline btn-sm">详情</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-inbox display-1" style="color:#d0d5dd"></i>
+                <p class="text-muted mt-3">暂无推荐教师</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('main.teachers') }}" class="btn btn-yb-outline px-4">查看全部教师 <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ 使用流程 ══════════ -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>如何使用平台</h2>
+            <div class="section-divider"></div>
+            <p class="text-muted">三步完成匹配，简单高效</p>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="text-center px-3">
+                    <div class="step-number">1</div>
+                    <h5 class="step-title">联系客服</h5>
+                    <p class="step-desc">家长添加客服微信，描述孩子的学习需求和期望</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center px-3">
+                    <div class="step-number">2</div>
+                    <h5 class="step-title">老师抢单</h5>
+                    <p class="step-desc">认证老师浏览需求并抢单，展示教学经验与优势</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center px-3">
+                    <div class="step-number">3</div>
+                    <h5 class="step-title">人工撮合</h5>
+                    <p class="step-desc">管理员致电双方确认，匹配成功后开始上课</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════ 联系客服弹窗 ══════════ -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,.15)">
+            <div class="modal-header" style="border-bottom:1px solid #f0f0f0">
+                <h5 class="modal-title" id="contactModalLabel">
+                    <i class="bi bi-headset" style="color:var(--yb-primary)"></i> 联系客服找家教
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="text-muted mb-4">请添加客服微信，我们将为您匹配最合适的家教老师</p>
+                <div class="mb-3">
+                    <div class="d-inline-block p-3" style="background:#f8f9fa;border-radius:12px">
+                        <i class="bi bi-wechat" style="font-size:4rem;color:#07c160"></i>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="badge" style="background:var(--yb-primary);font-size:1rem;padding:8px 16px;border-radius:8px">
+                        微信号：yb1113y
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-clock"></i> 服务时间：周一至周日 9:00-21:00
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #f0f0f0;justify-content:center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

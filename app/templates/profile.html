@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}个人中心 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- 账户信息卡片 -->
+            <div class="yb-card-static mb-4">
+                <div class="card-header-primary">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> 个人中心</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted small">用户名</p>
+                            <p class="fw-bold" style="color:var(--yb-dark)">{{ current_user.username }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted small">邮箱</p>
+                            <p class="fw-bold" style="color:var(--yb-dark)">{{ current_user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted small">角色</p>
+                            <p>{% if current_user.is_parent() %}<span class="badge" style="background:var(--yb-success)">家长</span>{% elif current_user.is_tutor() %}<span class="badge" style="background:var(--yb-primary)">老师</span>{% else %}<span class="badge" style="background:var(--yb-error)">管理员</span>{% endif %}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted small">注册时间</p>
+                            <p>{{ current_user.created_at.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                        {% if current_user.is_tutor() and current_user.tutor_profile %}
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted small">审核状态</p>
+                            <p>{% if current_user.tutor_profile.status == 'approved' %}<span class="badge" style="background:var(--yb-success)"><i class="bi bi-check-circle"></i> 已通过</span>{% elif current_user.tutor_profile.status == 'pending' %}<span class="badge" style="background:var(--yb-secondary)"><i class="bi bi-hourglass-split"></i> 审核中</span>{% else %}<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> 已拒绝</span>{% endif %}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if current_user.is_tutor() and current_user.tutor_profile %}
+            <!-- 编辑简历卡片 -->
+            <div class="yb-card-static">
+                <div class="card-header-secondary">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> 编辑简历信息</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.real_name.label(class="form-label") }}
+                                {{ form.real_name(class="form-control", placeholder="请输入真实姓名") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control", placeholder="11位手机号") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.education.label(class="form-label") }}
+                                {{ form.education(class="form-control", placeholder="如：本科") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.experience.label(class="form-label") }}
+                                {{ form.experience(class="form-control", placeholder="年数") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.hourly_rate.label(class="form-label") }}
+                                {{ form.hourly_rate(class="form-control", placeholder="元/小时") }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.subjects.label(class="form-label") }}
+                                {{ form.subjects(class="form-control", placeholder="如：数学,英语") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control", placeholder="如：海淀区") }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.bio.label(class="form-label") }}
+                            {{ form.bio(class="form-control", rows=4, placeholder="简要介绍您的教学经验和风格") }}
+                        </div>
+                        <div class="text-end">
+                            {{ form.submit(class="btn btn-yb-primary px-4") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

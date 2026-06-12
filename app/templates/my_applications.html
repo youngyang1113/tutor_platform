@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}我的抢单 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h2 class="mb-1">我的申请</h2>
+        <p class="text-muted mb-0">查看您提交的所有抢单记录，等待管理员致电确认</p>
+    </div>
+    <div class="row">
+        {% for app in applications %}
+        <div class="col-md-6 mb-4">
+            <div class="yb-card h-100" {% if app.status == 'success' %}style="border-left:4px solid var(--yb-success)"{% elif app.status == 'failed' %}style="border-left:4px solid #d0d5dd"{% else %}style="border-left:4px solid var(--yb-secondary)"{% endif %}>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex gap-1">
+                            <span class="badge-subject">{{ app.job_order.subject }}</span>
+                            <span class="badge" style="background:rgba(255,154,86,.12);color:var(--yb-secondary)">{{ app.job_order.grade }}</span>
+                        </div>
+                        {% if app.status == 'success' %}<span class="badge" style="background:rgba(82,196,26,.12);color:var(--yb-success)"><i class="bi bi-check-circle"></i> 撮合成功</span>{% elif app.status == 'failed' %}<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> 未匹配</span>{% else %}<span class="badge" style="background:rgba(255,154,86,.12);color:var(--yb-secondary)"><i class="bi bi-hourglass-split"></i> 待处理</span>{% endif %}
+                    </div>
+                    <h5 class="mb-2">{{ app.job_order.location }}</h5>
+                    <p class="text-muted small mb-3">{{ app.message[:60] }}...</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" style="color:var(--yb-primary)">{% if app.proposed_rate %}报价：{{ app.proposed_rate }}<small>元/h</small>{% else %}默认时薪{% endif %}</span>
+                        <span class="text-muted small"><i class="bi bi-clock"></i> {{ app.created_at.strftime('%m-%d') }}</span>
+                    </div>
+                </div>
+                <div class="price-footer">
+                    <a href="{{ url_for('main.order_detail', id=app.job_order.id) }}" class="btn btn-yb-outline w-100 btn-sm">
+                        查看需求详情 <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-lightning-charge display-1" style="color:#d0d5dd"></i>
+            <p class="text-muted mt-3">您还没有抢过单</p>
+            <a href="{{ url_for('main.orders') }}" class="btn btn-yb-primary"><i class="bi bi-megaphone"></i> 去抢单</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

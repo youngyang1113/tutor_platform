@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}教师详情 - {{ profile.real_name }}{% endblock %}
+{% block page_title %}<i class="bi bi-person-workspace text-info"></i> 教师详情{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card"><div class="card-body text-center">
+            <i class="bi bi-person-circle display-1 text-primary"></i>
+            <h4 class="mt-2">{{ profile.real_name }}</h4>
+            <p class="text-muted">{{ profile.user.username }} · {{ profile.user.email }}</p>
+            
+            <!-- 审核状态 -->
+            <p>{% if profile.status == 'pending' %}<span class="badge bg-warning fs-6">待审核</span>{% elif profile.status == 'approved' %}<span class="badge bg-success fs-6">已通过</span>{% else %}<span class="badge bg-secondary fs-6">已拒绝</span>{% endif %}</p>
+            
+            <!-- 认证标签 -->
+            <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
+                {% if profile.is_platform_certified %}
+                <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> 平台认证</span>
+                {% endif %}
+                {% if profile.is_verified %}
+                <span class="badge bg-info"><i class="bi bi-shield-check"></i> 资质已验</span>
+                {% endif %}
+            </div>
+            
+            <div class="d-grid gap-2 mt-3">
+                {% if profile.status == 'pending' %}
+                <form method="POST" action="{{ url_for('manage.approve_teacher', id=profile.id) }}"><button type="submit" class="btn btn-success w-100"><i class="bi bi-check-circle"></i> 通过审核</button></form>
+                <form method="POST" action="{{ url_for('manage.reject_teacher', id=profile.id) }}"><button type="submit" class="btn btn-outline-danger w-100"><i class="bi bi-x-circle"></i> 拒绝</button></form>
+                {% elif profile.status == 'approved' %}
+                <form method="POST" action="{{ url_for('manage.reject_teacher', id=profile.id) }}"><button type="submit" class="btn btn-outline-warning w-100"><i class="bi bi-x-circle"></i> 撤销通过</button></form>
+                {% else %}
+                <form method="POST" action="{{ url_for('manage.approve_teacher', id=profile.id) }}"><button type="submit" class="btn btn-outline-success w-100"><i class="bi bi-check-circle"></i> 重新通过</button></form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('manage.reset_teacher', id=profile.id) }}"><button type="submit" class="btn btn-outline-secondary w-100"><i class="bi bi-arrow-counterclockwise"></i> 重置为待审核</button></form>
+                <hr>
+                <form method="POST" action="{{ url_for('manage.certify_teacher', id=profile.id) }}">
+                    <button type="submit" class="btn {% if profile.is_platform_certified %}btn-success{% else %}btn-outline-success{% endif %} w-100">
+                        <i class="bi bi-patch-check-fill"></i> {{ '取消平台认证' if profile.is_platform_certified else '平台认证' }}
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('manage.verify_teacher', id=profile.id) }}">
+                    <button type="submit" class="btn {% if profile.is_verified %}btn-info{% else %}btn-outline-info{% endif %} w-100">
+                        <i class="bi bi-shield-check"></i> {{ '取消资质验证' if profile.is_verified else '资质已验' }}
+                    </button>
+                </form>
+            </div>
+        </div></div>
+    </div>
+    <div class="col-lg-8 mb-4">
+        <div class="card mb-4"><div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-file-person"></i> 个人资料</h6></div><div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-2"><strong>真实姓名：</strong>{{ profile.real_name }}</div>
+                <div class="col-md-6 mb-2"><strong>手机号：</strong>{{ profile.phone or '未填写' }}</div>
+                <div class="col-md-6 mb-2"><strong>身份证：</strong>{{ profile.id_card[:4] ~ '**********' ~ profile.id_card[-4:] if profile.id_card else '未填写' }}</div>
+                <div class="col-md-6 mb-2"><strong>性别：</strong>{{ profile.gender or '未填写' }}</div>
+                <div class="col-md-6 mb-2"><strong>学历：</strong>{{ profile.education or '未填写' }}</div>
+                <div class="col-md-6 mb-2"><strong>毕业院校：</strong>{{ profile.school or '未填写' }}</div>
+                <div class="col-md-6 mb-2"><strong>专业：</strong>{{ profile.major or '未填写' }}</div>
+                <div class="col-md-6 mb-2"><strong>教龄：</strong>{{ profile.experience or 0 }} 年</div>
+                <div class="col-md-6 mb-2"><strong>时薪：</strong>{{ profile.hourly_rate }} 元/小时</div>
+                <div class="col-md-6 mb-2"><strong>地区：</strong>{{ profile.location or '未填写' }}</div>
+                <div class="col-12 mb-2"><strong>科目：</strong>{{ profile.subjects or '未填写' }}</div>
+                <div class="col-12 mb-2"><strong>自我介绍：</strong>{{ profile.introduction or '未填写' }}</div>
+                <div class="col-12 mb-2"><strong>教学特色：</strong>{{ profile.teaching_style or '未填写' }}</div>
+                <div class="col-12 mb-2"><strong>教学成果：</strong>{{ profile.achievements or '未填写' }}</div>
+                <div class="col-12"><strong>注册时间：</strong>{{ profile.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+        </div></div>
+        <div class="card mb-4"><div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-lightning-charge"></i> 抢单记录 ({{ applications|length }})</h6></div><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead class="table-light"><tr><th>需求</th><th>报价</th><th>状态</th><th>时间</th></tr></thead><tbody>
+            {% for a in applications %}
+            <tr><td><a href="{{ url_for('manage.order_detail', id=a.job_order.id) }}">#{{ a.job_order.id }} {{ a.job_order.subject }}-{{ a.job_order.grade }}</a></td><td>{{ a.proposed_rate or '-' }}元</td><td>{% if a.status == 'pending' %}<span class="badge bg-warning">待处理</span>{% elif a.status == 'success' %}<span class="badge bg-success">撮合成功</span>{% else %}<span class="badge bg-secondary">未匹配</span>{% endif %}</td><td>{{ a.created_at.strftime('%m-%d %H:%M') }}</td></tr>
+            {% else %}<tr><td colspan="4" class="text-center text-muted py-3">暂无抢单记录</td></tr>{% endfor %}
+        </tbody></table></div></div></div>
+    </div>
+</div>
+{% endblock %}

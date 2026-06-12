@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+{% block title %}抢单管理{% endblock %}
+{% block page_title %}<i class="bi bi-lightning-charge text-info"></i> 抢单管理（线索）{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white"><div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('manage.applications') }}" class="btn btn-sm {% if not status %}btn-primary{% else %}btn-outline-primary{% endif %}">全部</a>
+            <a href="{{ url_for('manage.applications', status='pending') }}" class="btn btn-sm {% if status == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">待处理</a>
+            <a href="{{ url_for('manage.applications', status='success') }}" class="btn btn-sm {% if status == 'success' %}btn-success{% else %}btn-outline-success{% endif %}">撮合成功</a>
+            <a href="{{ url_for('manage.applications', status='failed') }}" class="btn btn-sm {% if status == 'failed' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">未匹配</a>
+        </div>
+        <span class="text-muted">共 {{ applications.total }} 条</span>
+    </div></div>
+    <div class="card-body p-0">
+        {% for a in applications.items %}
+        <div class="border-bottom p-3">
+            <div class="row align-items-start">
+                <div class="col-md-2">
+                    <strong>{{ a.tutor_profile.real_name if a.tutor_profile else '' }}</strong><br>
+                    <small class="text-muted">{{ a.tutor_profile.phone if a.tutor_profile else '' }}</small>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ url_for('manage.order_detail', id=a.job_order.id) }}">#{{ a.job_order.id }} {{ a.job_order.subject }}</a><br>
+                    <small class="text-muted">{{ a.job_order.grade }} · {{ a.job_order.location }}</small>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted">家长手机：</small><br>
+                    <span>{{ a.job_order.contact_phone[:3] + '****' + a.job_order.contact_phone[7:] if a.job_order.contact_phone and a.job_order.contact_phone|length == 11 else (a.job_order.contact_phone or '') }}</span>
+                </div>
+                <div class="col-md-1">{% if a.proposed_rate %}<span class="text-primary fw-bold">{{ a.proposed_rate }}元</span>{% else %}<span class="text-muted">默认</span>{% endif %}</div>
+                <div class="col-md-2">
+                    {% if a.status == 'pending' %}<span class="badge bg-warning">待处理</span>{% elif a.status == 'success' %}<span class="badge bg-success">撮合成功</span>{% else %}<span class="badge bg-secondary">未匹配</span>{% endif %}
+                </div>
+                <div class="col-md-3 text-end">
+                    <form method="POST" action="{{ url_for('manage.update_app_status', id=a.id) }}">
+                        <select name="status" class="form-select form-select-sm d-inline-block" style="width:auto" onchange="this.form.submit()">
+                            <option value="pending" {% if a.status == 'pending' %}selected{% endif %}>待处理</option>
+                            <option value="success" {% if a.status == 'success' %}selected{% endif %}>撮合成功</option>
+                            <option value="failed" {% if a.status == 'failed' %}selected{% endif %}>未匹配</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+            <p class="mt-2 mb-1 small">{{ a.message[:100] }}{% if a.message|length > 100 %}...{% endif %}</p>
+            <form method="POST" action="{{ url_for('manage.update_note', id=a.id) }}" class="mt-1">
+                <div class="input-group input-group-sm">
+                    <input type="text" name="admin_note" class="form-control" value="{{ a.admin_note or '' }}" placeholder="管理员跟进备注...">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">保存</button>
+                </div>
+            </form>
+        </div>
+        {% else %}<p class="text-center text-muted py-4">暂无抢单记录</p>{% endfor %}
+    </div>
+</div>
+{% if applications.pages > 1 %}
+<nav class="mt-3"><ul class="pagination justify-content-center">
+    {% if applications.has_prev %}<li class="page-item"><a class="page-link" href="{{ url_for('manage.applications', page=applications.prev_num, status=status) }}">上一页</a></li>{% endif %}
+    {% for p in applications.iter_pages() %}{% if p %}{% if p == applications.page %}<li class="page-item active"><span class="page-link">{{ p }}</span></li>{% else %}<li class="page-item"><a class="page-link" href="{{ url_for('manage.applications', page=p, status=status) }}">{{ p }}</a></li>{% endif %}{% else %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}{% endfor %}
+    {% if applications.has_next %}<li class="page-item"><a class="page-link" href="{{ url_for('manage.applications', page=applications.next_num, status=status) }}">下一页</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}

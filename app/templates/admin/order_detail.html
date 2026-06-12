@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% block title %}需求详情 #{{ order.id }}{% endblock %}
+{% block page_title %}<i class="bi bi-file-earmark-text text-warning"></i> 需求详情 #{{ order.id }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">需求信息</h6>
+                <div class="d-flex gap-2">
+                    {% if order.status == 'open' %}
+                    <form method="POST" action="{{ url_for('manage.close_order', id=order.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">关闭需求</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('manage.reopen_order', id=order.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-success">重新开放</button>
+                    </form>
+                    {% endif %}
+                    <a href="{{ url_for('manage.edit_order', id=order.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> 编辑</a>
+                    <form method="POST" action="{{ url_for('manage.delete_order', id=order.id) }}" class="d-inline" onsubmit="return confirm('确定删除需求 #{{ order.id }} 吗？此操作不可恢复。')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> 删除</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body"><div class="row">
+                <div class="col-md-6 mb-2"><strong>科目：</strong>{{ order.subject }}</div>
+                <div class="col-md-6 mb-2"><strong>年级：</strong>{{ order.grade }}</div>
+                <div class="col-md-6 mb-2"><strong>地点：</strong>{{ order.location }}</div>
+                <div class="col-md-6 mb-2"><strong>预算：</strong>{{ order.budget }}元/小时</div>
+                <div class="col-md-6 mb-2"><strong>时间：</strong>{{ order.schedule }}</div>
+                <div class="col-md-6 mb-2"><strong>课时：</strong>{{ order.duration }}小时/次</div>
+                <div class="col-md-6 mb-2"><strong>家长：</strong>{{ order.parent.username }}</div>
+                <div class="col-md-6 mb-2"><strong>家长手机：</strong><span class="text-danger fw-bold">{{ order.contact_phone or '未填写' }}</span></div>
+                <div class="col-12"><strong>描述：</strong>{{ order.description }}</div>
+            </div></div>
+        </div>
+        <div class="card"><div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-lightning-charge"></i> 抢单记录 ({{ applications|length }})</h6></div><div class="card-body p-0">
+            {% for a in applications %}
+            <div class="border-bottom p-3 {% if a.status == 'success' %}bg-success bg-opacity-10{% endif %}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">{{ a.tutor_profile.real_name if a.tutor_profile else '' }}
+                            {% if a.status == 'success' %}<span class="badge bg-success">撮合成功</span>{% elif a.status == 'failed' %}<span class="badge bg-secondary">未匹配</span>{% else %}<span class="badge bg-warning">待处理</span>{% endif %}
+                        </h6>
+                        <p class="text-muted small mb-1">{{ a.tutor_profile.education if a.tutor_profile else '' }} · {{ a.tutor_profile.experience if a.tutor_profile else 0 }}年教龄 · 手机：<strong>{{ a.tutor_profile.phone if a.tutor_profile else '' }}</strong></p>
+                    </div>
+                    <div class="text-end">{% if a.proposed_rate %}<span class="text-primary fw-bold">{{ a.proposed_rate }}元/h</span>{% endif %}<br><small class="text-muted">{{ a.created_at.strftime('%m-%d %H:%M') }}</small></div>
+                </div>
+                <p class="mt-2 mb-2">{{ a.message }}</p>
+                <form method="POST" action="{{ url_for('manage.update_note', id=a.id) }}" class="mt-2"><div class="input-group input-group-sm"><span class="input-group-text">跟进备注</span><input type="text" name="admin_note" class="form-control" value="{{ a.admin_note or '' }}" placeholder="输入管理员备注..."><button type="submit" class="btn btn-outline-primary">保存</button></div></form>
+            </div>
+            {% else %}<p class="text-center text-muted py-4">暂无抢单记录</p>{% endfor %}
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card mb-3"><div class="card-header bg-white"><h6 class="mb-0">状态</h6></div><div class="card-body text-center">
+            {% if order.status == 'open' %}<i class="bi bi-unlock display-4 text-success"></i><h5 class="mt-2 text-success">招募中</h5>{% else %}<i class="bi bi-lock display-4 text-secondary"></i><h5 class="mt-2 text-secondary">已关闭</h5>{% endif %}
+        </div></div>
+        <div class="card"><div class="card-header bg-white"><h6 class="mb-0">快捷操作</h6></div><div class="card-body d-grid gap-2">
+            <a href="{{ url_for('manage.edit_order', id=order.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> 编辑需求</a>
+            <a href="{{ url_for('manage.orders') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> 返回列表</a>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

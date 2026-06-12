@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}我的 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- 用户信息卡片 -->
+            <div class="mine-card mb-4">
+                <div class="mine-header">
+                    <div class="mine-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div class="mine-info">
+                        <h4 class="mb-1">{{ current_user.username }}</h4>
+                        <span class="badge {% if current_user.is_tutor() %}bg-primary{% else %}bg-success{% endif %}">
+                            {{ '教师' if current_user.is_tutor() else '家长' }}
+                        </span>
+                        {% if current_user.is_tutor() and profile %}
+                            {% if profile.status == 'approved' %}
+                            <span class="badge bg-success ms-1">已认证</span>
+                            {% elif profile.status == 'pending' %}
+                            <span class="badge bg-warning ms-1">审核中</span>
+                            {% else %}
+                            <span class="badge bg-danger ms-1">未通过</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if current_user.is_tutor() and profile %}
+                <!-- 资料完善度 -->
+                <div class="mine-progress mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small text-muted">资料完善度</span>
+                        <span class="small fw-bold">{{ '100%' if profile.is_profile_complete else '待完善' }}</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if profile.is_profile_complete %}bg-success{% else %}bg-warning{% endif %}" 
+                             style="width: {{ '100' if profile.is_profile_complete else '50' }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if current_user.is_tutor() %}
+            <!-- 教师功能菜单 -->
+            <div class="mine-menu-card mb-4">
+                <h6 class="mine-menu-title"><i class="bi bi-person-gear"></i> 教师功能</h6>
+                
+                <a href="{{ url_for('main.mine_edit') }}" class="mine-menu-item">
+                    <div class="mine-menu-icon bg-primary">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div class="mine-menu-body">
+                        <div class="mine-menu-name">编辑个人资料</div>
+                        <div class="mine-menu-desc">完善您的教学信息、擅长科目等</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                
+                <a href="{{ url_for('main.mine_resume') }}" class="mine-menu-item">
+                    <div class="mine-menu-icon bg-success">
+                        <i class="bi bi-file-person"></i>
+                    </div>
+                    <div class="mine-menu-body">
+                        <div class="mine-menu-name">我的简历</div>
+                        <div class="mine-menu-desc">预览和分享您的教师简历</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                
+                <a href="{{ url_for('main.mine_certificate') }}" class="mine-menu-item">
+                    <div class="mine-menu-icon bg-warning">
+                        <i class="bi bi-award"></i>
+                    </div>
+                    <div class="mine-menu-body">
+                        <div class="mine-menu-name">证书管理</div>
+                        <div class="mine-menu-desc">上传教师资格证、学历证书等</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                
+                <a href="{{ url_for('main.my_applications') }}" class="mine-menu-item">
+                    <div class="mine-menu-icon bg-info">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <div class="mine-menu-body">
+                        <div class="mine-menu-name">我的抢单</div>
+                        <div class="mine-menu-desc">查看抢单记录和状态</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- 通用菜单 -->
+            <div class="mine-menu-card mb-4">
+                <h6 class="mine-menu-title"><i class="bi bi-gear"></i> 通用设置</h6>
+                
+                <a href="{{ url_for('main.profile') }}" class="mine-menu-item">
+                    <div class="mine-menu-icon bg-secondary">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="mine-menu-body">
+                        <div class="mine-menu-name">账号设置</div>
+                        <div class="mine-menu-desc">修改密码、绑定邮箱等</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                
+                <a href="{{ url_for('auth.logout') }}" class="mine-menu-item text-danger">
+                    <div class="mine-menu-icon bg-danger">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </div>
+                    <div class="mine-menu-body">
+                        <div class="mine-menu-name">退出登录</div>
+                        <div class="mine-menu-desc">安全退出当前账号</div>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

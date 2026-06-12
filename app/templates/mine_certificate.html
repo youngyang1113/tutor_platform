@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}证书管理 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('main.mine') }}" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i> 返回
+                </a>
+                <h4 class="mb-0 fw-bold">证书管理</h4>
+            </div>
+            
+            <!-- 上传证书表单 -->
+            <div class="mine-edit-card mb-4">
+                <h6 class="mb-3"><i class="bi bi-cloud-upload"></i> 上传新证书</h6>
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.cert_type.label(class="form-label") }}
+                            {{ form.cert_type(class="form-select") }}
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            {{ form.cert_name.label(class="form-label") }}
+                            {{ form.cert_name(class="form-control", placeholder="如：高中数学教师资格证") }}
+                            {% for e in form.cert_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.cert_image.label(class="form-label") }}
+                        {{ form.cert_image(class="form-control", accept="image/*") }}
+                        <small class="text-muted">支持jpg、png格式，单张图片上传</small>
+                        {% for e in form.cert_image.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    
+                    <div class="text-end">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 已上传证书列表 -->
+            <div class="mine-edit-card">
+                <h6 class="mb-3"><i class="bi bi-list-check"></i> 已上传证书</h6>
+                
+                {% if certificates %}
+                <div class="cert-list">
+                    {% for cert in certificates %}
+                    <div class="cert-item">
+                        <div class="cert-info">
+                            <div class="cert-type-badge">{{ cert.cert_type }}</div>
+                            <div>
+                                <div class="fw-bold">{{ cert.cert_name }}</div>
+                                <small class="text-muted">上传时间：{{ cert.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                        <div class="cert-actions">
+                            <span class="badge {% if cert.status == 'approved' %}bg-success{% elif cert.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ '已认证' if cert.status == 'approved' else '审核中' if cert.status == 'pending' else '未通过' }}
+                            </span>
+                            {% if cert.image_path %}
+                            <button class="btn btn-sm btn-outline-info ms-2" onclick="toggleImage('certImg{{ cert.id }}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('main.delete_certificate', id=cert.id) }}" class="d-inline ms-2">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定删除此证书？')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- 证书图片预览 -->
+                    {% if cert.image_path %}
+                    <div id="certImg{{ cert.id }}" class="cert-images-preview" style="display:none;">
+                        <img src="{{ url_for('static', filename=cert.image_path) }}" 
+                             class="cert-preview-img" alt="{{ cert.cert_name }}">
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-award display-4 text-muted"></i>
+                    <p class="text-muted mt-2">暂未上传证书</p>
+                    <p class="small text-muted">上传教师资格证等证书可以提高家长信任度</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleImage(id) {
+    var el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

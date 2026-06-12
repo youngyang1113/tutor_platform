@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}编辑资料 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('main.mine') }}" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i> 返回
+                </a>
+                <h4 class="mb-0 fw-bold">编辑个人资料</h4>
+            </div>
+            
+            <div class="mine-edit-card">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- 基本信息 -->
+                    <div class="form-section">
+                        <h6 class="form-section-title"><i class="bi bi-person"></i> 基本信息</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.real_name.label(class="form-label") }}
+                                {{ form.real_name(class="form-control", placeholder="请输入真实姓名") }}
+                                {% for e in form.real_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control", placeholder="请输入手机号") }}
+                                {% for e in form.phone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.gender.label(class="form-label") }}
+                                {{ form.gender(class="form-select") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.id_card.label(class="form-label") }}
+                                {{ form.id_card(class="form-control", placeholder="选填") }}
+                                {% for e in form.id_card.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control", placeholder="如：海淀区") }}
+                                {% for e in form.location.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 教育背景 -->
+                    <div class="form-section">
+                        <h6 class="form-section-title"><i class="bi bi-mortarboard"></i> 教育背景</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.education.label(class="form-label") }}
+                                {{ form.education(class="form-select") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.school.label(class="form-label") }}
+                                {{ form.school(class="form-control", placeholder="如：北京大学") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.major.label(class="form-label") }}
+                                {{ form.major(class="form-control", placeholder="如：数学") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 教学信息 -->
+                    <div class="form-section">
+                        <h6 class="form-section-title"><i class="bi bi-book"></i> 教学信息</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.subjects.label(class="form-label") }}
+                                {{ form.subjects(class="form-control", placeholder="如：数学,物理") }}
+                                <small class="text-muted">多个科目用逗号分隔</small>
+                                {% for e in form.subjects.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.experience.label(class="form-label") }}
+                                {{ form.experience(class="form-control", placeholder="0") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.hourly_rate.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.hourly_rate(class="form-control", placeholder="200") }}
+                                    <span class="input-group-text">元/h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 个人介绍 -->
+                    <div class="form-section">
+                        <h6 class="form-section-title"><i class="bi bi-chat-quote"></i> 个人介绍</h6>
+                        <div class="mb-3">
+                            {{ form.introduction.label(class="form-label") }}
+                            {{ form.introduction(class="form-control", rows=4, placeholder="介绍您的教学经历、教学风格、教学成果等") }}
+                            <small class="text-muted">{{ form.introduction.description }}</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.teaching_style.label(class="form-label") }}
+                            {{ form.teaching_style(class="form-control", rows=3, placeholder="描述您的教学方法和特点") }}
+                            <small class="text-muted">{{ form.teaching_style.description }}</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.achievements.label(class="form-label") }}
+                            {{ form.achievements(class="form-control", rows=3, placeholder="如：学生成绩提升案例、获奖经历等") }}
+                            <small class="text-muted">{{ form.achievements.description }}</small>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('main.mine') }}" class="btn btn-outline-secondary">取消</a>
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

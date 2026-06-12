@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% block title %}仪表盘{% endblock %}
+{% block page_title %}<i class="bi bi-speedometer2 text-primary"></i> 仪表盘{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3 mb-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><p class="text-muted mb-1">总用户</p><h2 class="mb-0">{{ stats.total_users }}</h2></div><i class="bi bi-people stat-icon text-primary"></i></div></div></div>
+    <div class="col-md-3 mb-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><p class="text-muted mb-1">认证教师</p><h2 class="mb-0">{{ stats.approved_tutors }}</h2>{% if stats.pending_tutors %}<small class="text-danger">+{{ stats.pending_tutors }} 待审核</small>{% endif %}</div><i class="bi bi-person-workspace stat-icon text-success"></i></div></div></div>
+    <div class="col-md-3 mb-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><p class="text-muted mb-1">开放需求</p><h2 class="mb-0">{{ stats.open_orders }}</h2><small class="text-muted">共 {{ stats.total_orders }} 条</small></div><i class="bi bi-file-earmark-text stat-icon text-warning"></i></div></div></div>
+    <div class="col-md-3 mb-3"><div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><p class="text-muted mb-1">抢单记录</p><h2 class="mb-0">{{ stats.total_applications }}</h2></div><i class="bi bi-lightning-charge stat-icon text-info"></i></div></div></div>
+</div>
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center"><h6 class="mb-0"><i class="bi bi-hourglass-split text-warning"></i> 待审核教师</h6><a href="{{ url_for('manage.teachers', status='pending') }}" class="btn btn-sm btn-outline-primary">查看全部</a></div>
+            <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><tbody>
+                {% for t in pending_teachers %}
+                <tr><td><strong>{{ t.real_name }}</strong><br><small class="text-muted">{{ t.education }} · {{ t.subjects }}</small></td><td class="text-end"><a href="{{ url_for('manage.teacher_detail', id=t.id) }}" class="btn btn-sm btn-outline-primary">审核</a></td></tr>
+                {% else %}<tr><td class="text-center text-muted py-4">暂无待审核教师</td></tr>{% endfor %}
+            </tbody></table></div></div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center"><h6 class="mb-0"><i class="bi bi-megaphone text-primary"></i> 最新需求</h6><a href="{{ url_for('manage.orders') }}" class="btn btn-sm btn-outline-primary">查看全部</a></div>
+            <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><tbody>
+                {% for o in recent_orders %}
+                <tr><td><span class="badge bg-primary">{{ o.subject }}</span> <span class="badge bg-secondary">{{ o.grade }}</span></td><td>{{ o.location }}</td><td class="text-primary fw-bold">{{ o.budget }}元/h</td><td class="text-end"><a href="{{ url_for('manage.order_detail', id=o.id) }}" class="btn btn-sm btn-outline-primary">详情</a></td></tr>
+                {% else %}<tr><td class="text-center text-muted py-4">暂无需求</td></tr>{% endfor %}
+            </tbody></table></div></div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-people text-info"></i> 最新注册用户</h6></div>
+    <div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead class="table-light"><tr><th>ID</th><th>用户名</th><th>邮箱</th><th>角色</th><th>状态</th><th>注册时间</th></tr></thead><tbody>
+        {% for u in recent_users %}
+        <tr><td>{{ u.id }}</td><td>{{ u.username }}</td><td>{{ u.email }}</td><td>{% if u.role == 'admin' %}<span class="badge bg-danger">管理员</span>{% elif u.role == 'tutor' %}<span class="badge bg-info">老师</span>{% else %}<span class="badge bg-success">家长</span>{% endif %}</td><td>{% if u.is_active %}<span class="badge bg-success">正常</span>{% else %}<span class="badge bg-secondary">禁用</span>{% endif %}</td><td>{{ u.created_at.strftime('%m-%d %H:%M') }}</td></tr>
+        {% endfor %}
+    </tbody></table></div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}登录 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="text-center mb-4">
+                <h2>欢迎回来</h2>
+                <div class="section-divider"></div>
+                <p class="text-muted">登录您的渊博家教账号</p>
+            </div>
+            <div class="yb-card-static">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text" style="border-radius:10px 0 0 10px !important"><i class="bi bi-person"></i></span>
+                                {{ form.username(class="form-control", placeholder="请输入用户名") }}
+                            </div>
+                            {% for e in form.username.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="mb-4">
+                            {{ form.password.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text" style="border-radius:10px 0 0 10px !important"><i class="bi bi-lock"></i></span>
+                                {{ form.password(class="form-control", placeholder="请输入密码") }}
+                            </div>
+                            {% for e in form.password.errors %}<div class="text-danger small mt-1">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-yb-primary btn-lg") }}
+                        </div>
+                    </form>
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <p class="mb-2 text-muted">还没有账号？</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="button" class="btn btn-yb-outline btn-sm" data-bs-toggle="modal" data-bs-target="#contactModal"><i class="bi bi-chat-dots"></i> 家长找老师</button>
+                            <a href="{{ url_for('auth.register_tutor') }}" class="btn btn-yb-secondary btn-sm"><i class="bi bi-person-workspace"></i> 老师注册</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 联系客服弹窗 -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,.15)">
+            <div class="modal-header" style="border-bottom:1px solid #f0f0f0">
+                <h5 class="modal-title" id="contactModalLabel">
+                    <i class="bi bi-headset" style="color:var(--yb-primary)"></i> 联系客服找家教
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="text-muted mb-4">请添加客服微信，我们将为您匹配最合适的家教老师</p>
+                <div class="mb-3">
+                    <div class="d-inline-block p-3" style="background:#f8f9fa;border-radius:12px">
+                        <i class="bi bi-wechat" style="font-size:4rem;color:#07c160"></i>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <span class="badge" style="background:var(--yb-primary);font-size:1rem;padding:8px 16px;border-radius:8px">
+                        微信号：yb1113y
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-clock"></i> 服务时间：周一至周日 9:00-21:00
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #f0f0f0;justify-content:center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

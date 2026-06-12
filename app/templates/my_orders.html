@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}我的需求 - 渊博家教{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">我的需求</h2>
+            <p class="text-muted mb-0">管理您发布的所有家教需求</p>
+        </div>
+        <a href="{{ url_for('main.new_order') }}" class="btn btn-yb-primary"><i class="bi bi-plus-circle"></i> 发布新需求</a>
+    </div>
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-md-6 mb-4">
+            <div class="yb-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex gap-1">
+                            <span class="badge-subject">{{ order.subject }}</span>
+                            <span class="badge" style="background:rgba(255,154,86,.12);color:var(--yb-secondary)">{{ order.grade }}</span>
+                        </div>
+                        {% if order.status == 'open' %}<span class="badge" style="background:rgba(82,196,26,.12);color:var(--yb-success)"><i class="bi bi-circle-fill" style="font-size:.5rem"></i> 招募中</span>{% else %}<span class="badge bg-secondary">已关闭</span>{% endif %}
+                    </div>
+                    <h5 class="mb-2">{{ order.location }}</h5>
+                    <p class="text-muted small mb-3">{{ order.description[:80] }}...</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold" style="color:var(--yb-primary)">{{ order.budget }}<small>元/h</small></span>
+                        <span class="text-muted small"><i class="bi bi-calendar"></i> {{ order.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                </div>
+                <div class="price-footer">
+                    <a href="{{ url_for('main.order_detail', id=order.id) }}" class="btn btn-yb-primary w-100 btn-sm">
+                        查看详情 <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-megaphone display-1" style="color:#d0d5dd"></i>
+            <p class="text-muted mt-3">您还没有发布过需求</p>
+            <a href="{{ url_for('main.new_order') }}" class="btn btn-yb-primary"><i class="bi bi-plus-circle"></i> 发布第一个需求</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}找老师 - 渊博家教{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2>找老师</h2>
+        <div class="section-divider"></div>
+        <p class="text-muted">经过严格审核的优质师资，覆盖全科目全年级</p>
+    </div>
+
+    <div class="row">
+        <!-- ══════════ 左侧：浮动筛选器 ══════════ -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-sidebar">
+                <h6 class="mb-3" style="color:var(--yb-dark)"><i class="bi bi-funnel" style="color:var(--yb-primary)"></i> 筛选条件</h6>
+
+                <form method="GET" id="filterForm">
+                    <!-- 科目筛选：胶囊形单选 -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">科目</label>
+                        <div class="d-flex flex-wrap gap-1">
+                            <label class="filter-pill {% if not subject %}active{% endif %}">
+                                <input type="radio" name="subject" value="" class="d-none" onchange="this.form.submit()">
+                                <span>全部</span>
+                            </label>
+                            {% for s in ['数学','语文','英语','物理','化学','生物','历史','地理','政治'] %}
+                            <label class="filter-pill {% if subject == s %}active{% endif %}">
+                                <input type="radio" name="subject" value="{{ s }}" class="d-none" {% if subject == s %}checked{% endif %} onchange="this.form.submit()">
+                                <span>{{ s }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 地区筛选 -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">地区</label>
+                        <input type="text" name="location" class="form-control form-control-sm" placeholder="输入地区关键词" value="{{ location }}">
+                    </div>
+
+                    <button type="submit" class="btn btn-yb-primary w-100 btn-sm">
+                        <i class="bi bi-search"></i> 搜索
+                    </button>
+                    {% if subject or location %}
+                    <a href="{{ url_for('main.teachers') }}" class="btn btn-yb-outline w-100 btn-sm mt-2">
+                        <i class="bi bi-x-circle"></i> 清除筛选
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- ══════════ 右侧：教师卡片网格 ══════════ -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">共 <strong style="color:var(--yb-primary)">{{ teachers.total }}</strong> 位老师</span>
+            </div>
+
+            <div class="row">
+                {% for profile in teachers.items %}
+                <div class="col-md-6 col-xl-4 mb-4">
+                    <div class="yb-card h-100">
+                        <div class="card-body text-center pt-4">
+                            <!-- 大圆形头像 + 白边 + 阴影 -->
+                            <div class="teacher-avatar mx-auto mb-3">
+                                <i class="bi bi-person-fill" style="font-size:2rem"></i>
+                            </div>
+                            <h5 class="mb-1">{{ profile.real_name }}</h5>
+                            <!-- 认证标签 -->
+                            {% if profile.is_platform_certified or profile.is_verified %}
+                            <div class="d-flex flex-wrap justify-content-center gap-1 mb-1">
+                                {% if profile.is_platform_certified %}
+                                <span class="badge-cert-sm"><i class="bi bi-patch-check-fill"></i> 平台认证</span>
+                                {% endif %}
+                                {% if profile.is_verified %}
+                                <span class="badge-cert-sm"><i class="bi bi-shield-check"></i> 资质已验</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-mortarboard"></i> {{ profile.education or '暂无学历信息' }}
+                            </p>
+                            <!-- 淡蓝低饱和度学科标签 -->
+                            <div class="mb-2 d-flex flex-wrap justify-content-center gap-1">
+                                {% for subject in profile.get_subjects_list()[:3] %}
+                                <span class="badge-subject">{{ subject }}</span>
+                                {% endfor %}
+                            </div>
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-briefcase"></i> {{ profile.experience or 0 }}年教龄
+                                &nbsp;·&nbsp;
+                                <i class="bi bi-geo-alt"></i> {{ profile.location or '未知' }}
+                            </p>
+                        </div>
+                        <!-- 浅灰底栏：时薪区域 -->
+                        <div class="price-footer d-flex justify-content-between align-items-center">
+                            <span class="fw-bold" style="color:var(--yb-primary);font-size:1.1rem">
+                                {{ profile.hourly_rate }}<small class="text-muted fw-normal">元/h</small>
+                            </span>
+                            <a href="{{ url_for('main.teacher_detail', id=profile.id) }}" class="btn btn-yb-primary btn-sm">
+                                查看详情 <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-search display-1" style="color:#d0d5dd"></i>
+                    <p class="text-muted mt-3">暂无符合条件的老师</p>
+                    <a href="{{ url_for('main.teachers') }}" class="btn btn-yb-outline btn-sm">清除筛选</a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 分页 -->
+            {% if teachers.pages > 1 %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if teachers.has_prev %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('main.teachers', page=teachers.prev_num, subject=subject, location=location) }}"><i class="bi bi-chevron-left"></i></a></li>
+                    {% endif %}
+                    {% for page_num in teachers.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                        {% if page_num %}
+                            {% if page_num == teachers.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('main.teachers', page=page_num, subject=subject, location=location) }}">{{ page_num }}</a></li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if teachers.has_next %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('main.teachers', page=teachers.next_num, subject=subject, location=location) }}"><i class="bi bi-chevron-right"></i></a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
